@@ -1,0 +1,99 @@
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+
+/**
+ * Created by sowmya on 9/11/16.
+ */
+public class PokemonShopping {
+
+    public static final String PIKACHU = "Pikachu";
+    public static final String SQUIRTLE = "Squirtle";
+    public static final String CHARMANDER = "Charmander";
+
+    private static Map<Integer, Double> discountChart;
+    private static Map<String, Double> priceChart;
+    static {
+        discountChart = new HashMap<Integer, Double>();
+        discountChart.put(1, 1.0);
+        discountChart.put(2, 0.9);
+        discountChart.put(3, 0.8);
+
+        priceChart = new HashMap<String, Double>();
+        priceChart.put(PIKACHU, 6.0);
+        priceChart.put(SQUIRTLE, 5.0);
+        priceChart.put(CHARMANDER, 5.0);
+    }
+
+    public static void main(String args[]) {
+
+        PokemonShopping pokemonShopping = new PokemonShopping();
+
+        Scanner in = new Scanner(System.in);
+        int p, s, c;
+        double price;
+        while (true) {
+            p = in.nextInt();
+            s = in.nextInt();
+            c = in.nextInt();
+            price = pokemonShopping.calculatePrice(p, s, c);
+            System.out.println("Price $" + price);
+        }
+
+
+    }
+
+    class MinAndCount {
+        int min, count;
+
+        public MinAndCount(int min, int count) {
+            this.min = min;
+            this.count = count;
+        }
+    }
+
+    private MinAndCount getMinAndCount(Map<String, Integer> typeCounts) {
+        int min = Integer.MAX_VALUE, count = 0;
+        for (Map.Entry<String, Integer> e : typeCounts.entrySet()) {
+
+            if (e.getValue() > 0 && e.getValue() < min) {
+                min = e.getValue();
+            }
+            if (e.getValue() > 0) {
+                count++;
+            }
+        }
+        return new MinAndCount(min, count);
+    }
+
+    private double getPrice(Map<String, Integer> typeCounts, MinAndCount minAndCount) {
+
+        double price = 0;
+        double discountPrice = discountChart.get(minAndCount.count);
+        for (Map.Entry<String, Integer> e : typeCounts.entrySet()) {
+            if (e.getValue() > 0) {
+                price += minAndCount.min * priceChart.get(e.getKey());
+                e.setValue(e.getValue() - minAndCount.min);
+            }
+        }
+        price *= discountPrice;
+        return price;
+    }
+
+    public double calculatePrice(int numOfPikachu, int numOfSquirtle, int numOfCharmander) {
+
+        Map<String, Integer> typeCounts = new HashMap<String, Integer>();
+        typeCounts.put(PIKACHU, numOfPikachu);
+        typeCounts.put(SQUIRTLE, numOfSquirtle);
+        typeCounts.put(CHARMANDER, numOfCharmander);
+
+        MinAndCount minAndCount = getMinAndCount(typeCounts);
+        double totalPrice = 0;
+        while (minAndCount.count > 0) {
+            totalPrice += getPrice(typeCounts, minAndCount);
+            minAndCount = getMinAndCount(typeCounts);
+        }
+        return totalPrice;
+    }
+    
+}
